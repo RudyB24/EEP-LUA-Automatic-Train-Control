@@ -13,7 +13,9 @@ Ich habe mir folgende Ziele gesetzt:
  - Die Anlage wird ausschließlich durch die Eingabe von Daten über Züge, Signale, Weichen und Strecken definiert
  - Das Ergebnis dieses EEP LUA Automatic Traffic Control Projekts kann hier heruntergeladen werden.
 
-Eine Erklärung, wie es funktioniert und wie man die LUA-Tabellen mit Daten füllt, die das eigene Layout definieren, liegt bei (PDF in Englisch und in Deutsch).
+Eine Erklärung, wie es funktioniert und wie man die LUA-Tabellen mit Daten füllt, die das eigene Layout definieren, liegt bei:
+ - English: EEP_LUA_Automatic+Train_Control.pdf
+ - Deutsch: EEP_LUA_Automatische_Zugsteuerung.pdf
 
 Der EEP-Ordner enthält 5 funktionierende EEP-Demo-Layouts mit dem LUA-Code und der Layoutdefinition.
 
