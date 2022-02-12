@@ -6,7 +6,7 @@ My old model railway was computer controlled with a program called Traincontroll
 It struck me that EEP has no automatic train control built in … or at least not in a way that is user friendly. There is however LUA, which allows us to write code to carry out these tasks. I wondered if it would be possible to write a LUA program that controls automatic train traffic in EEP, like Traincontroller does with a real model railway layout.
 
 I set myself the following goals:
- - Trains should automatically drive from block to block.
+ - Trains should automatically drive from block to block
  - It should be possible to specify which trains are allowed in which blocks
  - It should be possible to define stop times, per train per block
  - It should be possible to start / stop individual trains
