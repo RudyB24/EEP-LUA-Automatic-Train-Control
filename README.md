@@ -1,4 +1,4 @@
-# EEP-LUA-Automatic-Train-Control
+# EEP-Lua-Automatic-Train-Control
 November 2021 I moved to a new house. Besides the many pluses the new home offers there’s one little issue: there’s no room for my model railway anymore. EEP came to the rescue … I can still design and ‘build’ model railways and on my 4k screen they are fun to tinker with.
 
 My old model railway was computer controlled with a program called Traincontroller. It allows for automatic train traffic whereby it takes care of switching turnouts and signals and accelerating and decelerating the trains.
@@ -21,7 +21,7 @@ An explanation on how it works and on how to fill the LUA tables with data that 
 
 The EEP folder contains 5 working EEP demo layouts with the LUA code and the layout definition included. 
 
-The LUA folder contains 5 files with the LUA code to make it easier to edit the code in say Notepad++.
+The Lua folder contains 5 files with the LUA code to make it easier to edit the code in say Notepad++.
 
 The TC folder contains the 5 layouts in Traincontroller, for those who might like to tinker with TC. Free demo version: https://www.freiwald.com/pages/download.htm
 
