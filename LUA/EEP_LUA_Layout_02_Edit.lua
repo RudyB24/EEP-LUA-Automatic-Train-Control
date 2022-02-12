@@ -135,7 +135,7 @@ function EEPMain()
       EEPSaveData(twowayblk[b], t+100) -- Save the the dummy train nr t+100 in the two way twin block on disk
       memsigold[b] = MEMSIGRED -- Set block memory old to 'occupied', now this 'if' statement won't run again
       request[b] = t           -- Flag is raised that train t in block b requests a new route
-      if allowed[t][b]>1 then stoptimer[b] = 5 * allowed[t][b] end -- 20 added is the average drive time to the signal
+      if allowed[t][b]>1 then stoptimer[b] = 5 * allowed[t][b] end
       r = train[t].route
       pb = route[r][1]         -- previous bock where the train came from
       EEPSetSignal(memsig[pb],MEMSIGGRN) -- Set memory signal of previous block to GREEN to release it next cycle
