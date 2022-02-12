@@ -1,6 +1,6 @@
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 -- Ruud Boer, January 2022
--- EEP LUA code to automatically drive trains from block to block.
+-- EEP Lua code to automatically drive trains from block to block.
 -- There's no need to write any LUA code, the code uses the data in the Configuration tables and variables below.
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 train   = {}
