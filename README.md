@@ -15,7 +15,9 @@ I set myself the following goals:
 
 The result of this EEP LUA Automatic Traffic Control Project can be downloaded here.
 
-An explanation on how it works and on how to fill the LUA tables with data that define your own layout goes with it (PDF in English and in German).
+An explanation on how it works and on how to fill the LUA tables with data that define your own layout goes with it:
+ - English: EEP_LUA_Automatic+Train_Control.pdf
+ - Deutsch: EEP_LUA_Automatische_Zugsteuerung.pdf
 
 The EEP folder contains 5 working EEP demo layouts with the LUA code and the layout definition included. 
 
