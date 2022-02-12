@@ -1,7 +1,7 @@
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 -- Ruud Boer, January 2022
--- EEP Lua code to automatically drive trains from block to block.
--- There's no need to write any Lua code, the code uses the data in the Configuration tables and variables below.
+-- EEP LUA code to automatically drive trains from block to block.
+-- There's no need to write any LUA code, the code uses the data in the Configuration tables and variables below.
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 train   = {}
 allowed = {}
@@ -203,6 +203,13 @@ function EEPMain()
   end
 
   return 1
+end
+[EEPLuaData]
+DN_1 = 1.000000
+DN_2 = 0.000000
+DN_3 = 0.000000
+DN_4 = 3.000000
+DN_5 = 2.000000
 DN_6 = 0.000000
 DN_7 = 0.000000
 DN_8 = 0.000000
