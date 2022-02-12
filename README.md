@@ -21,11 +21,11 @@ The EEP folder contains 5 working EEP demo layouts with the LUA code and the lay
 
 The LUA folder contains 5 files with the LUA code to make it easier to edit the code in say Notepad++.
 
-The TC folder contains the 5 layouts in Traincontroller, for those who might like to tinker with that in the free demo version of TC. (https://www.freiwald.com/pages/download.htm)
+The TC folder contains the 5 layouts in Traincontroller, for those who might like to tinker with TC. Free demo version: https://www.freiwald.com/pages/download.htm
 
-The Images folder contains images of the 5 layouts in EEP, SCARM and Traincontroller.
+The Images folder contains screenshots of the 5 layouts in EEP, SCARM and Traincontroller.
 
-The SCARM file is included for those who might like to tinker with the free demo version of SCARM. (https://www.scarm.info/index.php)
+The SCARM folder contains 2 SCARM files, one with layouts 1-4 (open menu View > Layers to switch layers) and one with layout 5, for those who might like to tinker with SCARM. Free demo version: https://www.scarm.info/index.php
 
 A series of YouTube videos in the making.
 
