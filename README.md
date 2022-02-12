@@ -21,7 +21,7 @@ An explanation on how it works and on how to fill the LUA tables with data that 
 
 The EEP folder contains 5 working EEP demo layouts with the LUA code and the layout definition included. 
 
-The Lua folder contains 5 files with the LUA code to make it easier to edit the code in say Notepad++.
+The LUA folder contains 5 files with the LUA code to make it easier to edit the code in say Notepad++.
 
 The TC folder contains the 5 layouts in Traincontroller, for those who might like to tinker with TC. Free demo version: https://www.freiwald.com/pages/download.htm
 
