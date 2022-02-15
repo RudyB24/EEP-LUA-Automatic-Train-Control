@@ -23,6 +23,10 @@ The EEP folder contains 5 working EEP demo layouts with the Lua code and the lay
 
 The LUA folder contains 5 files with the Lua code to make it easier to edit the code in say Notepad++.
 
+The GBS folder contains 5 files with the track view consoles, which you can insert yourself into the demo layouts.
+Below the start/stop signal are the train signals. These signals can also be used in automatic operation.
+The block signals (in the direction of travel at the edge of the tiles) and the memory signals (in the direction of travel in the middle of the tiles) as well as the switches must not be adjusted in automatic operation.
+
 The TC folder contains the 5 layouts in Traincontroller, for those who might like to tinker with TC. Free demo version: https://www.freiwald.com/pages/download.htm
 
 The Images folder contains screenshots of the 5 layouts in EEP, SCARM and Traincontroller.
