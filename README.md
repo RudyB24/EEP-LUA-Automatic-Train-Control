@@ -34,6 +34,7 @@ The Images folder contains screenshots of the 5 layouts in EEP, SCARM and Trainc
 The SCARM folder contains 2 SCARM files, one with layouts 1-4 (open menu View > Layers to switch layers) and one with layout 5, for those who might like to tinker with SCARM. Free demo version: https://www.scarm.info/index.php
 
 A series of YouTube videos in the making.
+The first viddeo is available here: https://www.youtube.com/watch?v=00TUOHE6jGI
 
 Any questions, comments and ideas are welcome. In the meantime … have fun.
 
