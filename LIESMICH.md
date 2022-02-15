@@ -21,6 +21,10 @@ Der EEP-Ordner enthält 5 funktionierende EEP-Demo-Layouts mit dem Lua-Code und 
 
 Der LUA-Ordner enthält 5 Dateien mit dem Lua-Code, um die Bearbeitung des Codes z.B. in Notepad++ zu erleichtern.
 
+Der GBS-Ordner enthält 5 Dateien mit den Gleisbildstellpulten, die man sich selber in die Anlagen einfügen kann.
+Unter dem Start/Stopp-Signal befinden sich die Zugsignale. Diese Signale können auch im automatischen Betrieb betätigt werden.
+Die Block-Signale (in Fahrtrichtung am Rand der Kacheln) und die Speicher-Signale (in Fahrtrichtung in der Mitte der Kacheln) sowie die Weichen dürfen im automatischen Betrieb nicht verstellt werden.
+
 Der TC-Ordner enthält die 5 Layouts in Traincontroller, für diejenigen, die vielleicht mit TC basteln möchten. Kostenlose Demo-Version: https://www.freiwald.com/pages/download.htm
 
 Der Ordner Images enthält Bildschirmfotos der 5 Layouts in EEP, SCARM und Traincontroller.
