@@ -304,7 +304,7 @@ local function run ()
       memsigOld[b] = MEMSIGGRN                                       -- Set block memory old to free, now this 'if' statement won't run again
 
       local trainId = (t > 0 and t or 0)
-      print("Train ",t," '",train[trainId].name,"' released block ",b,(twowayblk[b] > 0 and " and twin block "..twowayblk[b] or ""),(t == dummydrain and " ### DUMMY TRAIN ###" or ""))
+      print("Train ",t," '",train[trainId].name,"' released block ",b,(twowayblk[b] > 0 and " and twin block "..twowayblk[b] or ""),(t == dummyTrain and " ### DUMMY TRAIN ###" or ""))
 
       train[trainId].block = 0                                       -- Set train to be located outside of any block
       EEPSaveData( b, 0 )                                            -- Save the state in file for when EEP closes
