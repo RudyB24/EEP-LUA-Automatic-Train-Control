@@ -1,38 +1,28 @@
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 -- Ruud Boer, January 2022
 -- EEP Lua code to automatically drive trains from block to block.
--- The user only has to define the layout by configuring some tables and variables
+-- The user only has to define the layout by configuring some tables and variables.
 -- There's no need to write any LUA code, the code uses the data in the tables and variables.
 --
--- Configuration for Demo Layout 05
+-- This sample shows the configuration for Demo Layout 05
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
--- Find a solution to use 'via' blocks'.
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- Table of named trains having an optional specific train signal to start/stop this train individually.
+-- (You can omit the "#" as first character.)
+train = {} 
+--           Train name             Train signal (optional)
+train[1] = { name="Steam CCW",      onoff=9,  }
+train[2] = { name="Orange CCW",     onoff=72, }
+train[3] = { name="Blue CW",        onoff=77, }
+train[4] = { name="Cream CW",       onoff=78, }
+train[5] = { name="Shuttle Red",    onoff=79, }
+train[6] = { name="Shuttle Yellow", onoff=92, }
+train[7] = { name="Shuttle Steam",  onoff=93, }
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
--- To place trains, change the code to PLACE_TRAINS=1, reload, 
--- place the trains and fill the initial position of the train in the trains[t] table,
--- and finally set PLACE_TRAINS=0 and reload.           
-PLACE_TRAINS = 0
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
--- Below configuration is for the RB31 layout
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-train = {}
---          Train name             Train signal       Initial position of the train
-train[1] = {name="Steam CCW",      onoff=9,  route=0, block=19}
-train[2] = {name="Orange CCW",     onoff=72, route=0, block=16}
-train[3] = {name="Blue CW",        onoff=77, route=0, block=3}
-train[4] = {name="Cream CW",       onoff=78, route=0, block=24}
-train[5] = {name="Shuttle Red",    onoff=79, route=0, block=13}
-train[6] = {name="Shuttle Yellow", onoff=92, route=0, block=9}
-train[7] = {name="Shuttle Steam",  onoff=93, route=0, block=8}
-
-allowed = {} -- Allowed blocks per train including optional stay time within blocks in seconds
+-- Allowed blocks per train including optional stay time within blocks in seconds
+-- You can and should defined allowed blocks for all named trains.
+-- More trains are detected automatically, however, these trains can go everywhere.
+allowed = {}
 --      block  1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
 allowed[1]= {35,25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0} -- 0 not allowed, 1 allowed, >1 stop time (add the drive time from sensor to signal)
 allowed[2]= {35,25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0}
@@ -42,9 +32,9 @@ allowed[5]= { 0, 1, 1, 1,28,28,28,28,28,28,28,28,28, 1, 1, 0, 0, 0, 0, 1, 1, 1, 
 allowed[6]= { 0, 1, 1, 1,28,28,28,28,28,28,28,28,28, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1}
 allowed[7]= { 0, 1, 1, 1,28,28,28,28,28,28,28,28,28, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1}
 
-twowayblk = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,18,17, 0, 0,22,21, 0, 0, 0,27,26} -- 0 or related block number
-blocksig  = {19,25,26,27,28,29,30,35,36,44,43,46,45,37,39,41,82,81,73,34,33,32,42,40,31,74,38} -- block signals
-memsig    = {47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,75,76} -- memory signals
+twowayblk = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,18,17, 0, 0,22,21, 0, 0, 0,27,26} -- Blocks which are used in both directions. Enter 0 or related block number
+blocksig  = {19,25,26,27,28,29,30,35,36,44,43,46,45,37,39,41,82,81,73,34,33,32,42,40,31,74,38} -- Block signals
+memsig    = {47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,75,76} -- Corresponding memory signal per block
 
 -- Configure possible routes between blocks here
 -- route[n] = {from block, to block, via={block,...}, turn={ID,state,...}} state: 1=main, 2=branch
@@ -110,6 +100,11 @@ MEMSIGGRN = 2 -- GREEN state of memory signals
 
 clearlog()
 blockControl = require("blockControl")
+
+-- Optional: Start automatically after finding all known train 
+-- Only do this if you have defined all trains in tables 'train' and 'allowed'.
+-- If you have more trains, you have to wait until all trains are detected and start manually. 
+blockControl.start(true)	-- Start main switch and all trains (use 'false' if the train signals should not get touched)
 
 function EEPMain()
 	blockControl.run()

@@ -4,33 +4,32 @@
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 -- Ruud Boer, January 2022
 -- EEP Lua code to automatically drive trains from block to block.
--- The user only has to define the layout by configuring some tables and variables
+-- The user only has to define the layout by configuring some tables and variables.
 -- There's no need to write any LUA code, the code uses the data in the tables and variables.
 --
--- Configuration for Demo Layout 03
+-- This sample shows the configuration for Demo Layout 03
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
--- To place trains, change the code to PLACE_TRAINS=1, reload, 
--- place the trains and fill the initial position of the train in the trains[t] table,
--- and finally set PLACE_TRAINS=0 and reload.           
-PLACE_TRAINS = 0
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- Table of named trains having an optional specific train signal to start/stop this train individually.
+-- (You can omit the "#" as first character.)
+train = {} 		  
+--          Train name    Train signal (optional)
+train[1] = {name="Steam", onoff=14, }
+train[2] = {name="Blue",  onoff=4, }
 
-train = {} -- Table of max 99 trains
---          Train name    Train signal       Initial position of the train
-train[1] = {name="Steam", onoff=14, route=0, block=6}
-train[2] = {name="Blue",  onoff=4,  route=0, block=5}
-
-allowed = {} -- Allowed blocks per train including optional stay time within blocks in seconds
+-- Allowed blocks per train including optional stay time within blocks in seconds
+-- You can and should defined allowed blocks for all named trains.
+-- More trains are detected automatically, however, these trains can go everywhere.
+allowed = {}
 --     block  1, 2, 3, 4, 5, 6
 allowed[1]= { 1, 1, 0, 0, 0, 1} -- 0 not allowed, 1 allowed, >1 stop time (add the drive time from sensor to signal)
 allowed[2]= { 0, 0, 1, 1, 1, 0}
 
-twowayblk = { 0, 3, 2, 0, 0, 0} -- 0 or related block number
-blocksig  = { 8,18, 9,19,10,13} -- block signals
-memsig    = { 5, 6, 7,15,20,21} -- memory signals
+twowayblk = { 0, 3, 2, 0, 0, 0} -- Blocks which are used in both directions. Enter 0 or related block number
+blocksig  = { 8,18, 9,19,10,13} -- Block signals
+memsig    = { 5, 6, 7,15,20,21} -- Corresponding memory signal per block
 
+-- Configure possible routes between blocks here
 route = {}
 -- route[n] = {from block, to block, turn={ID,state,...}} state: 1=main, 2=branch
 route[ 1] = { 1,6,turn={ 2,1, 12,1}}
@@ -44,14 +43,14 @@ route[ 8] = { 6,2,turn={11,1,  1,2, 16,1}}
 
 MAINSW = 3 -- id of the main switch
 
--- Configuration of the signals (only required if different from default state)
+-- Configuration of the signals (only required if different from default state and not used in this skrip)
 -- Example: Signal BS1_KS1_BRK_MAS_oM2_4 requires 1: GREEN, 2: RED
 MAINON    = 1 -- 'on' state of main switch
 MAINOFF   = 2 -- 'off' state of main switch
 BLKSIGRED = 1 -- 'red' state of block signals
 BLKSIGGRN = 2 -- 'green' state of block signals
-MEMSIGRED = 1 -- 'red' state of memory signals
-MEMSIGGRN = 2 -- 'green' state of memory signals
+MEMSIGRED = 1 -- 'red' state of memory signals and train signals
+MEMSIGGRN = 2 -- 'green' state of memory signals and train signals
 
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 -- Remaining part of main script in EEP
@@ -59,6 +58,11 @@ MEMSIGGRN = 2 -- 'green' state of memory signals
 
 clearlog()
 blockControl = require("blockControl")
+
+-- Optional: Start automatically after finding all known train 
+-- Only do this if you have defined all trains in tables 'train' and 'allowed'.
+-- If you have more trains, you have to wait until all trains are detected and start manually. 
+blockControl.start(true)	-- Start main switch and all trains (use 'false' if the train signals should not get touched)
 
 function EEPMain()
     blockControl.run()
@@ -71,7 +75,7 @@ end
 -- MODULE blockControl
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-local _VERSION = 'v2022-02-19'
+local _VERSION = 'v2022-02-21'
 
 -- Default values for the state of signals
 local MAINON        = MAINON    or 1  -- ON    state of main switch
@@ -94,12 +98,12 @@ local tippTextGREEN = "<bgrgb=0,220,0>"
 
 --Consistency checks
 assert( #train == #allowed,          "ERROR: Count of trains do not match: #train="..#train..                " <> #allowed="..#allowed )
-for k,v in pairs(allowed) do
+for k = 1, #allowed do
   assert( #allowed[k] == #blocksig,  "ERROR: Count of blocks do not match: #allowed["..k.."]="..#allowed[k].." <> #blocksig="..#blocksig )
 end  
 assert( #twowayblk == #blocksig,     "ERROR: Count of blocks do not match: #twowayblk="..#twowayblk..        " <> #blocksig="..#blocksig )
 assert( #memsig == #blocksig,        "ERROR: Count of blocks do not match: #memsig="..#memsig..              " <> #blocksig="..#blocksig )
-for k,v in pairs(route) do
+for k = 1, #route do
   assert( #(route[k].turn) % 2 == 0, "ERROR: No pairs of data in route["..k.."].turn" )
 end  
 
@@ -118,59 +122,10 @@ route[0]          = {0,0, turn = {}}
 math.randomseed(os.time())
 local cycle = 0
 
--- Initialization after placing trains 
-if PLACE_TRAINS == 1 then
-  print("PLACE_TRAINS is active")
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@  Initialization: Show tipp text on signals via generated functions EEPOnSignal_x
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-  EEPSetSignal( MAINSW, MAINOFF )                        -- Main Stop
-
-  for b = 1, #blocksig do
-    EEPSaveData( b, 0 )                                  -- Write 0's to the block reservation disk file to make them not nil
-    EEPSetSignal( blocksig[b], BLKSIGRED, 1 )            -- Set all block signals to RED
-  end
-
-  for t = 1, #train do                                   -- For all trains
-    EEPSetSignal( train[t].onoff, MEMSIGRED, 1 )         -- ... stop the train 
-
-    local b = train[t].block                             -- ... get current block of the train from definition in the Lua skript 
-    
-    if b > 0 then
-      print(string.format("Store train %d '%s' in block %d", t, train[t].name, b))
-      EEPSaveData( b, t )                                -- ... store train nr to its current block in the reservation disk file
-    end
-    
-    if twowayblk[b] > 0 then 
-      EEPSaveData( twowayblk[b], dummyTrain )            -- ... and reserve corresponding two way twin block with a dummy train
-      print("PLACE_TRAINS: EEPSaveData( ",twowayblk[b],", dummyTrain ) for block=",b," and train=",t)
-    end
-  end
-  print("Initialization finished, change code to PLACE_TRAINS = 0")
-end
-
--- Initialization 
-for b = 1, #blocksig do
-  local ok, t = EEPLoadData( b )                         -- Read the train nr that reserves a block from the disk file
-
-  if t and train[t] then 
-    train[t].block = b                                   -- Store the block in the train table
-  else
-     t = 0                                               -- No train in this block
-  end    
-  blockReserved[b] = t                                   -- Reserve the block
-  memsigOld[b]     = MEMSIGGRN
-  request[b]       = 0
-  stopTimer[b]     = 0
-
-  if t > 0 then
-    EEPSetSignal( memsig[b], MEMSIGRED, 1 )
-    print(string.format("INIT: Set memory for block %d  to %d-%s for train %d '%s'",b,MEMSIGRED,"RED",  t,train[t].name))
-  else                                        -- if it's a two way twin block with a dummy train we don't put memsig[b] on RED
-    EEPSetSignal( memsig[b], MEMSIGGRN, 1 )
-    print(string.format("INIT: Set memory for block %d  to %d-%s", b,MEMSIGGRN,"GREEN"))
-  end
-end
-
--- Initialization: Show tipp text on signals via generated functions EEPOnSignal_x
 -- <j> linkbündig, <c> zentriert, <r> rechtsbündig, <br> Zeilenwechsel 
 -- <b>Fett</b>, <i>Kursiv</i>, <fgrgb=0,0,0> Schriftfarbe, <bgrgb=0,0,0> Hintergrundfarbe
 -- siehe https://www.eepforum.de/forum/thread/34860-7-6-3-tipp-texte-f%C3%BCr-objekte-und-kontaktpunkte/
@@ -181,56 +136,150 @@ _ENV["EEPOnSignal_"..MAINSW] = function(pos)
     if pos == MAINON then 
         showTippText = not showTippText
         print("Toggle tipp text: ",tostring(showTippText))
-        for k, t in ipairs(train) do                           -- Train signals
-            local signal = t.onoff
-            _ENV["EEPOnSignal_"..signal](EEPGetSignal(signal)) -- show current signal status
+        for t = 1, #train do                           			-- Train signals
+            local signal = train[t].onoff
+            _ENV["EEPOnSignal_"..signal](EEPGetSignal(signal)) 	-- show current signal status
         end
-        for block, signal in ipairs(blocksig) do               -- Block signals
-            _ENV["EEPOnSignal_"..signal](EEPGetSignal(signal)) -- show current signal status
+        for b, signal in ipairs(blocksig) do               		-- Block signals
+            _ENV["EEPOnSignal_"..signal](EEPGetSignal(signal)) 	-- show current signal status
         end
-        for block, signal in ipairs(memsig) do                 -- Memory signals
-            _ENV["EEPOnSignal_"..signal](EEPGetSignal(signal)) -- show current signal status
+        for b, signal in ipairs(memsig) do                 		-- Memory signals
+            _ENV["EEPOnSignal_"..signal](EEPGetSignal(signal))	-- show current signal status
         end    
     end
 end
 -- Train signals
-for k, t in ipairs(train) do
-    local signal = t.onoff
-    EEPRegisterSignal(signal)
-    _ENV["EEPOnSignal_"..signal] = function(pos)      -- show signal status
-        if showTippText then print(string.format("Train %d '%s' Signal %d: %s", k, train[k].name, signal, (pos == MEMSIGRED and "RED" or "GREEN"))) end
-        EEPChangeInfoSignal(signal, string.format("%s\n%s", t.name, (pos == MEMSIGRED and tippTextRED.."STOP" or tippTextGREEN.."GO")))
-        EEPShowInfoSignal(signal, showTippText)
-    end
+for t = 1, #train do
+    local signal = train[t].onoff
+	if signal then 
+		EEPRegisterSignal(signal)
+		_ENV["EEPOnSignal_"..signal] = function(pos)      -- show signal status
+			if showTippText then print(string.format("Train %d '%s' Signal %d: %s", t, train[t].name, signal, (pos == MEMSIGRED and "RED" or "GREEN"))) end
+			EEPChangeInfoSignal(signal, string.format("%s\n%s", train[t].name, (pos == MEMSIGRED and tippTextRED.."STOP" or tippTextGREEN.."GO")))
+			EEPShowInfoSignal(signal, showTippText)
+		end
+	end
 end
 -- Block signals
-for block, signal in ipairs(blocksig) do
+for b, signal in ipairs(blocksig) do
     EEPRegisterSignal(signal)
     _ENV["EEPOnSignal_"..signal] = function(pos)      -- show signal status
         local trainName = EEPGetSignalTrainName(signal, 1) or ""
-        if showTippText then print(string.format("Block %d '%s' Signal %d: %s", block, trainName, signal, (pos == BLKSIGRED and "RED" or "GREEN"))) end
-        --EEPChangeInfoSignal(signal, string.format("Block %d\n%s\n%d %s", block, trainName, signal, (pos == BLKSIGRED and tippTextRED.."STOP" or tippTextGREEN.."GO"))) -- updated in function run
+        if showTippText then print(string.format("Block %d '%s' Signal %d: %s", b, trainName, signal, (pos == BLKSIGRED and "RED" or "GREEN"))) end
+        --EEPChangeInfoSignal(signal, string.format("Block %d\n%s\n%d %s", b, trainName, signal, (pos == BLKSIGRED and tippTextRED.."STOP" or tippTextGREEN.."GO"))) -- updated in function run
         --EEPShowInfoSignal(signal, showTippText)
     end
 end
 -- Memory signals
-for block, signal in ipairs(memsig) do
+for b, signal in ipairs(memsig) do
     EEPRegisterSignal(signal)
     _ENV["EEPOnSignal_"..signal] = function(pos)      -- show signal status
-        if showTippText then print(string.format("Memory %d Signal %d: %s", block, signal, (pos == MEMSIGRED and "RED" or "GREEN"))) end
-        EEPChangeInfoSignal(signal, string.format("Memory %d\n%d %s", block, signal, (pos == MEMSIGRED and tippTextRED.."reserved" or tippTextGREEN.."free")))
+        if showTippText then print(string.format("Memory %d Signal %d: %s", b, signal, (pos == MEMSIGRED and "RED" or "GREEN"))) end
+        EEPChangeInfoSignal(signal, string.format("Memory %d\n%d %s", b, signal, (pos == MEMSIGRED and tippTextRED.."reserved" or tippTextGREEN.."free")))
         EEPShowInfoSignal(signal, false)--showTippText)
     end
 end
 
-print("blockControl Initialization finished\n")
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@  Initialization - find trains
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-  -- show current signal status of all block signals
+local FINDMODE = true
+print("FIND MODE is active")
+EEPSetSignal( MAINSW, MAINOFF )         		-- Main Stop, do not allow creating any new requests
+for b = 1, #blocksig do
+  EEPSetSignal( blocksig[b], BLKSIGRED, 1 )		-- Stop all trains at block signals
+
+  blockReserved[b] = 0                  		-- Let's assume that there is no train in block ...
+  stopTimer[b]     = 0
+  EEPSetSignal( memsig[b], MEMSIGGRN, 1 )
+  memsigOld[b]     = MEMSIGGRN
+
+  request[b]       = 0							-- ... and no request 
+end
+
+for t = 1, #train do
+	train[t].block = 0							-- We don't know for sure where the trains is
+end
+
+local function findTrains ()
+	-- Find trains in blocks
+	for b, signal in ipairs(blocksig) do
+		local trainName = EEPGetSignalTrainName(signal, 1)  -- Get the train name from EEP
+		if trainName ~= "" then								-- The block knows a train
+			trainName = string.sub(trainName, 2, -1)		-- Remove leading # character from name
+			
+			local t											-- Identify the train
+			for k = 1, #train do                			-- Search train by name
+				if trainName == train[k].name then
+				  t = k                                     -- Train found by name
+				end
+			end
+			
+			if not t then									-- Create entry for unknown train (without train signal)
+				table.insert(train, { name = trainName, onoff = 0, })
+				t = #train
+				
+				allowed[t] = {}
+				for b = 1, #blocksig do
+					table.insert(allowed[t], 1)				-- Such trains can go everywhere
+				end
+				
+				print(string.format("Create new train %d '%s' in block %d", t, trainName, b))
+			elseif not train[t].block or train[t].block == 0 then	
+				print(string.format("Train %d '%s' found in block %d", t, trainName, b))
+			end
+			
+			train[t].block   = b							-- The train occupies the block
+			train[t].route   = 0							-- and has no route yet
+			
+			blockReserved[b] = t							-- Place the train in the block
+			blockReserved[twowayblk[b]] = dummyTrain
+			EEPSetSignal( memsig[b], MEMSIGRED )			-- Set arrival at new block ...
+			memsigOld[b] = MEMSIGGRN						-- ... to request a new route
+		end
+	end
+	
+	-- End find mode if user activated the main signal and all trains are assigned to a block
+	local finished = true
+	for t = 1, #train do
+		if not train[t].block or train[t].block == 0 then
+		  finished = false        						-- Train found by name
+		end
+	end
+	if finished then
+		if EEPGetSignal( MAINSW ) == MAINON then 	
+			FINDMODE = false
+			print("FIND MODE finished")
+		else
+		
+		end
+	end
+end
+
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@  Show current signal status of all block signals
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 local function showSignalStatus()
-  for block, signal in ipairs(blocksig) do
-    local t   = blockReserved[block]
+
+  -- Main signal
+  if FINDMODE then
+    EEPChangeInfoSignal(MAINSW, "<b>Initialization: Find trains and place them into blocks</b>")
+    EEPShowInfoSignal(MAINSW, true)
+  else
+    local pos = EEPGetSignal( MAINSW )
+    EEPChangeInfoSignal(MAINSW, "Block control is active"
+	  .."\n".. (pos == MAINOFF and tippTextRED.."RED" or tippTextGREEN.."GREEN")
+	)
+    EEPShowInfoSignal(MAINSW, showTippText)
+  end
+
+  -- Block signals
+  for b, signal in ipairs(blocksig) do
+    local t   = blockReserved[b]
     local pos = EEPGetSignal( signal )
-    local mem = EEPGetSignal( memsig[block] )
+    local mem = EEPGetSignal( memsig[b] )
  
     local trainName = EEPGetSignalTrainName(signal, 1)      -- Get the name from EEP if the signal already holds the train ...
     if trainName == "" then 
@@ -242,45 +291,29 @@ local function showSignalStatus()
 	end
 
     EEPChangeInfoSignal(signal, "Block"
-      .." "..  string.format("%d", block) 
+      .." "..  string.format("%d", b) 
       .."\n".. trainName
 --      .." "..  string.format("%d", t)
 --      .."\n".. (mem == MEMSIGRED and tippTextRED.."RED" or tippTextGREEN.."GREEN")
---      .." "..  string.format("%d", memsig[block])
+--      .." "..  string.format("%d", memsig[b])
       .."\n".. (pos == BLKSIGRED and tippTextRED.."RED" or tippTextGREEN.."GREEN")
 --      .." "..  string.format("%d", signal) 
     )
     EEPShowInfoSignal(signal, showTippText)
-    
-    -- Consistency check
-    if trainName and trainName ~= "" then                                 -- Check if current train at signal match to expected location of that train
-      local trainId
-      for k, entry in ipairs(train) do                                    -- Search train 
-        if signal == blocksig[entry.block] then                           
-          trainId = k                                                     -- Train found in this block
-        end
-        if trainName == entry.name or trainName == "#"..entry.name then
-          trainId = k                                                     -- Train found by name
-        end
-      end
-      if trainId then                                                     -- Train found
-        if trainName ~= train[trainId].name and trainName ~= "#"..train[trainId].name then   -- Does the name of the train match?
-          print(string.format("ERROR Signal %d of block %d holds train '%s' which differs from name '%s'", signal, block, trainName, train[trainId].name))
-        end
-      elseif t ~= dummyTrain then                                                            -- Train not found
-          print(string.format("ERROR Signal %d of block %d holds unknown train '%s'", signal, block, trainName))
-      end
-    end
   end
 end
 
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
--- @@@  Call this function in EEPMain
+-- @@@  Function to be called in EEPMain
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 local function run ()
- 
-  if PLACE_TRAINS == 1 then return end  -- Do nothing in PLACE_TRAINS mode
+
+  if FINDMODE then 
+    findTrains()                        -- Find trains and assign them to blocks
+    showSignalStatus()                  -- Show current signal status of all block signals
+	return
+  end
 
   cycle = cycle + 1                     -- EEPMain cycle number
   if cycle % 25 == 1 then               -- Do this every 5 seconds, given that EEPmain() runs 5x/s
@@ -307,9 +340,9 @@ local function run ()
       print("Train ",t," '",train[trainId].name,"' released block ",b,(twowayblk[b] > 0 and " and twin block "..twowayblk[b] or ""),(t == dummyTrain and " ### DUMMY TRAIN ###" or ""))
 
       train[trainId].block = 0                                       -- Set train to be located outside of any block
-      EEPSaveData( b, 0 )                                            -- Save the state in file for when EEP closes
-      if twowayblk[b] > 0 then EEPSaveData( twowayblk[b], 0 ) end    -- Also save the two-way twin block state
 
+      EEPSaveData( b, 0 )                                            -- Save the state in file for when EEP closes
+      if twowayblk[b] > 0 then EEPSaveData( twowayblk[b], 0 ) end    -- Also save the two-way twin block state, to get loaded in next cycle
 
       blockReserved[b] = 0                                           -- Set block to 'free'
       blockReserved[twowayblk[b]] = 0                                -- Also the two way twin block is now 'free'
@@ -329,11 +362,11 @@ local function run ()
         train[t].block = b                                           -- Remember the location of the train...
 
         if twowayblk[b] > 0 then            
-          EEPSaveData( twowayblk[b], dummyTrain )                    -- ... and save a dummy train in the corresponding two way twin block
+          EEPSaveData( twowayblk[b], dummyTrain )                    -- ... and save a dummy train in the corresponding two way twin block, to get loaded in next cycle
           print("Save dummy train in twin block ",twowayblk[b])
         end
 
-        EEPSaveData( b, t )                                          -- Save the train number in this block, to be read when EEP reopens
+        EEPSaveData( b, t )                                          -- Save the train number in this block, to get loaded in next cycle
 
         request[b]   = t                                             -- Flag is raised that train t in block b requests a new route
 
@@ -358,8 +391,9 @@ local function run ()
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     if t > 0 then                                                    -- A real train...
       if request[b] > 0 and stopTimer[b] == 0 then                   -- ... has a request and no wait time
-        local pos = EEPGetSignal( train[t].onoff )
-        if pos == MEMSIGGRN then                                     -- Stop time passed and train switch is ON
+	    local signal = train[t].onoff or 0							 -- Does this train has a train signal?
+        local pos = EEPGetSignal( signal )
+        if pos == 0 or  pos == MEMSIGGRN then         				 -- Stop time passed and train switch is ON
  
           for r = 1, #route do                                       -- Check for free destination blocks in the route table
             local fromBlock = route[r][1]
@@ -409,7 +443,7 @@ local function run ()
 
     if twowayblk[db] > 0 then
       blockReserved[twowayblk[db]] = dummyTrain         -- Also set the two way twin block to 'reserved' with the dummy train nr
-      print("blockReserved[",twowayblk[db],"] = dummyTrain for block ",db," and train ",t)
+      --print("blockReserved[",twowayblk[db],"] = dummyTrain for block ",db," and train ",t)
     end
 
     for to = 1, #route[nr].turn / 2 do                  -- Reserve and switch the turnouts
@@ -427,9 +461,38 @@ local function run ()
   return
 end
 
+local function start (allTrains)
+	EEPSetSignal( MAINSW, MAINON )						-- Activate main signal
+	
+	if allTrains then
+		for t = 1, #train do							-- Activate all train signals
+			local signal = train[t].onoff
+			if signal then 
+				EEPSetSignal( train[t].onoff, MEMSIGGRN )
+			end
+		end
+	end
+end
+
+local function stop (allTrains)
+	EEPSetSignal( MAINSW, MAINOFF )						-- Deactivate main signal
+	
+	if allTrains then
+		for t = 1, #train do							-- Deactivate all train signals
+			local signal = train[t].onoff
+			if signal then 
+				EEPSetSignal( train[t].onoff, MEMSIGRED )
+			end
+		end
+	end
+end
+
 -- API of the module
 local blockControl = {
-    run = run,        -- Call this function in EEPMain
+    run 	= run,		-- Call this function in EEPMain
+	
+	start 	= start,	-- Optional: Start main signal and start trains	
+	stop 	= stop,		-- Optional: Stop main signal and stop trains
 }
 
 return blockControl
