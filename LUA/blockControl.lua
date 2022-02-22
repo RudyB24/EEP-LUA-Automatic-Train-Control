@@ -109,8 +109,8 @@ for k = 1, #allowed do
 end  
 assert( #twowayblk == #blocksig,     "ERROR: Count of blocks do not match: #twowayblk="..#twowayblk..        " <> #blocksig="..#blocksig )
 assert( #memsig == #blocksig,        "ERROR: Count of blocks do not match: #memsig="..#memsig..              " <> #blocksig="..#blocksig )
-for k = 1, #route do
-  assert( #(route[k].turn) % 2 == 0, "ERROR: No pairs of data in route["..k.."].turn" )
+for r,_ in pairs(route) do
+  assert( #(route[r].turn) % 2 == 0, "ERROR: No pairs of data in route["..r.."].turn" )
 end  
 
 -- add dummy entries to simplify index access to tables
@@ -406,7 +406,7 @@ local function run ()
         local pos = EEPGetSignal( signal )
         if pos == 0 or  pos == MEMSIGGRN then         				 -- Stop time passed and train switch is ON
  
-          for r = 1, #route do                                       -- Check for free destination blocks in the route table
+          for r,_ in pairs(route) do                                 -- Check for free destination blocks in the route table
             local fromBlock = route[r][1]
             local toBlock   = route[r][2]
             if fromBlock == b and allowed[t][toBlock] > 0 then
