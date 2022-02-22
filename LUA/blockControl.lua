@@ -13,11 +13,11 @@
 -- Table of named trains having an optional specific train signal to start/stop this train individually.
 -- (You can omit the "#" as first character.)
 train = {} 		  
---          Train name    Train signal (optional)
+-- train[id] = { name = "Train name", onoff = Train signal (optional) }
 train[1] = {name="Steam", onoff=14, }
 train[2] = {name="Blue",  onoff=4, }
 
--- Allowed blocks per train including optional stay time within blocks in seconds
+-- Allowed blocks per train (having same id like in table 'train') including optional stay time within blocks in seconds
 -- You can and should defined allowed blocks for all named trains.
 -- More trains are detected automatically, however, these trains can go everywhere.
 allowed = {}
@@ -29,17 +29,24 @@ twowayblk = { 0, 3, 2, 0, 0, 0} -- Blocks which are used in both directions. Ent
 blocksig  = { 8,18, 9,19,10,13} -- Block signals
 memsig    = { 5, 6, 7,15,20,21} -- Corresponding memory signal per block
 
--- Configure possible routes between blocks here
-route = {}
--- route[n] = {from block, to block, turn={ID,state,...}} state: 1=main, 2=branch
-route[ 1] = { 1,6,turn={ 2,1, 12,1}}
-route[ 2] = { 2,6,turn={ 2,2, 12,1, 17,1}}
-route[ 3] = { 3,5,turn={16,1,  1,2, 11,2}}
-route[ 4] = { 4,5,turn={16,2,  1,2, 11,2}}
-route[ 5] = { 5,3,turn={12,2,  2,2, 17,1}}
-route[ 6] = { 5,4,turn={12,2,  2,2, 17,2}}
-route[ 7] = { 6,1,turn={11,1,  1,1}}
-route[ 8] = { 6,2,turn={11,1,  1,2, 16,1}}
+-- Configure possible routes between adjacent blocks by defining the required settings of the turnouts on this path
+route = {
+--  { from block, to block, turn={ID,state,...}},    with state: 1=main, 2=branch
+	{ 1, 6, turn={  2,1, 12,1       }},
+	{ 2, 6, turn={  2,2, 12,1, 17,1 }},
+	{ 3, 5, turn={ 16,1,  1,2, 11,2 }},
+	{ 4, 5, turn={ 16,2,  1,2, 11,2 }},
+	{ 5, 3, turn={ 12,2,  2,2, 17,1 }},
+	{ 5, 4, turn={ 12,2,  2,2, 17,2 }},
+	{ 6, 1, turn={ 11,1,  1,1       }},
+	{ 6, 2, turn={ 11,1,  1,2, 16,1 }},
+}
+-- Using the notation above we define the whole table in one Lua statement (spanning from line 33 to 43). 
+-- Instead of this you can use multiple Lua statements  using indices as well:
+--route = {}
+--route[1] = { 1, 6, turn={  2,1, 12,1       }}
+--route[2] = { 2, 6, turn={  2,2, 12,1, 17,1 }}
+--...
 
 MAINSW = 3 -- id of the main switch
 
@@ -75,7 +82,7 @@ end
 -- MODULE blockControl
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-local _VERSION = 'v2022-02-21'
+local _VERSION = 'v2022-02-22'
 
 -- Default values for the state of signals
 local MAINON        = MAINON    or 1  -- ON    state of main switch
@@ -87,7 +94,6 @@ local MEMSIGGRN     = MEMSIGGRN or 2  -- GREEN state of memory signals
 
 local blockReserved = {} -- Stores the free/reserved state for every block, 0=free, trainnr=reserved
 local turnReserved  = {} -- Stores the free/reserved state for every turnout, false=free, true=reseved
-local available     = {} -- Stores available routes. Per EEPmain() cycle only one route will be randomly selected fom this table
 local memsigOld     = {} -- Old memory signal value, used to check with memsig[b] for 0>1 or 1>0 transitions
 local request       = {} -- A train that enters a block will request a new route: trainnr=request pending, 0=no request
 local stopTimer     = {} -- Waittime, decremented every EEPmain() cycle, which is 5x/s
@@ -226,8 +232,12 @@ local function findTrains ()
 				end
 				
 				print(string.format("Create new train %d '%s' in block %d", t, trainName, b))
+				
 			elseif not train[t].block or train[t].block == 0 then	
 				print(string.format("Train %d '%s' found in block %d", t, trainName, b))
+				
+			else
+				-- Train is already known
 			end
 			
 			train[t].block   = b							-- The train occupies the block
@@ -322,7 +332,8 @@ local function run ()
   
   showSignalStatus()                    -- Show current signal status of all block signals
 
-  local fr = 0                          -- Initialization of count of free routes
+  local available = {} 					-- Stores available routes. Per EEPmain() cycle only one route will be randomly selected fom this table
+  
   for b = 1, #blocksig do               -- Check all blocks for arrivals and calculate possible new routes
 
     local t = blockReserved[b]          -- A train or a dummy train has reserved this block (could be 0, then the block is free)
@@ -408,8 +419,7 @@ local function run ()
               end
 
               if free == 0 then                                      -- the destination block and turnouts are free (VIA BLOCKS ARE NOT USED YET)
-                fr = fr + 1                                          -- increment free routes counter
-                available[fr] = r                                    -- Store this free route in the 'available' table
+                available[#available + 1] = r                        -- Append this free route to the 'available' table
                 if EEPGetSignal( MAINSW ) == MAINON then 
                   print ("Train ",t," '",train[t].name,"' can go from ",fromBlock," to ",toBlock) 
                 end
@@ -431,8 +441,8 @@ local function run ()
   if EEPGetSignal( MAINSW ) == MAINOFF then
     return -- Quit because no new route is activated
 
-  elseif fr > 0 then                                    -- At least one route is available
-    local nr = available[math.random(fr)]               -- A new route is randomly selected
+  elseif #available > 0 then                            -- At least one route is available
+    local nr = available[math.random(#available)]       -- A new route is randomly selected
     local cb = route[nr][1]                             -- Current block, where the train is now
     local db = route[nr][2]                             -- Destination block, where the train will drive to
     local t  = blockReserved[cb]                        -- Nr of the train in the current block
