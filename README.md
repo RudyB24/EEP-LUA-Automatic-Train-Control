@@ -43,8 +43,22 @@ The Images folder contains screenshots of the 5 layouts in EEP, SCARM and Trainc
 
 The SCARM folder contains 2 SCARM files, one with layouts 1-4 (open menu View > Layers to switch layers) and one with layout 5, for those who might like to tinker with SCARM. Free demo version: https://www.scarm.info/index.php
 
-A series of YouTube videos in the making.
-The first viddeo is available here: https://www.youtube.com/watch?v=00TUOHE6jGI
+A series of YouTube videos can be found here:
+
+- [EEP LUA 01 - Automatic Train Control on Any Layout Without Writing Code](https://www.youtube.com/watch?v=00TUOHE6jGI&ab_channel=Rudysmodelrailway)<br>
+This is the first video in a series to demonstrate how automatic train traffic can be generated on any EEP (model) railway simulator layout, using a Lua script. The user doesn't have to (re)write any code, all that is needed is to define the layout by entering data on trains, signals and routes in a set of tables.
+
+- [EEP LUA 02 Automatic Train Control on Any EEP Layout](https://www.youtube.com/watch?v=vul1iGRF7BM&ab_channel=Rudysmodelrailway)<br>
+In the second video we use four blocks and add a second train. The video shows how this layout is specified in Lua.
+
+- [EEP Lua 03 Automatic Train Control on any EEP Layout](https://www.youtube.com/watch?v=Ie-ZppHUU1M&ab_channel=Rudysmodelrailway)<br>
+In the third video we'll add a two way block to the layout and see how to configure it in the Lua data.
+
+- [EEP Lua 04 Automatic Train Control on any EEP Layout](https://www.youtube.com/watch?v=3du73eQuRGM&ab_channel=Rudysmodelrailway)<br>
+In the fourth video we'll add two dead end tracks to the layout and see how we an make trains reverse there. We'll also add a third train, configure the layout in Lua and drive three trains around without collisions.
+
+- [EEP Lua 05 Automatic Train Control on any EEP Layout](https://www.youtube.com/watch?v=bJ38hEM8wnI&ab_channel=Rudysmodelrailway)<br>
+In the fifth video we have a look at a somewhat more serious layout with 27 blocks, 43 routes and 7 trains, all driving simultaneously!
 
 Any questions, comments and ideas are welcome. In the meantime … have fun.
 
