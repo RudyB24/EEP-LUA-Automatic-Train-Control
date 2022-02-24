@@ -114,8 +114,9 @@ local request       = {} -- A train that enters a block will request a new route
 local stopTimer     = {} -- Waittime, decremented every EEPmain() cycle, which is 5x/s
 local dummyTrain    = -999 -- Dummy train which could reserve a twin block (I've no idea why a small value like -4 would fail.)
 
-local tippTextRED   = "<bgrgb=240,0,0>"
-local tippTextGREEN = "<bgrgb=0,220,0>"
+local tippTextRED    = "<bgrgb=240,0,0>"
+local tippTextGREEN  = "<bgrgb=0,220,0>"
+local tippTextYELLOW = "<bgrgb=220,220,0>"
 
 --Consistency checks
 assert( #train == #allowed,          "ERROR: Count of trains do not match: #train="..#train..                " <> #allowed="..#allowed )
@@ -317,9 +318,9 @@ local function showSignalStatus()
       .." "..  string.format("%d", b)
       .."\n".. trainName
 --    .." "..  string.format("%d", t)
---    .."\n".. (mem == MEMSIGRED and tippTextRED.."RED" or tippTextGREEN.."GREEN")
+      .."\n".. ( mem == MEMSIGRED and tippTextRED.."occupied" or ( t == 0 and tippTextGREEN.."free" or tippTextYELLOW.."reserved" ) )
 --    .." "..  string.format("%d", memsig[b])
-      .."\n".. (pos == BLKSIGRED and tippTextRED.."RED" or tippTextGREEN.."GREEN")
+--    .."\n".. ( pos == BLKSIGRED and tippTextRED.."RED" or tippTextGREEN.."GREEN" )
 --    .." "..  string.format("%d", signal)
     )
     EEPShowInfoSignal(signal, showTippText)
@@ -340,7 +341,7 @@ local function run ()
 
   cycle = cycle + 1                     -- EEPMain cycle number
   if cycle % 25 == 1 then               -- Do this every 5 seconds, given that EEPmain() runs 5x/s
-    if EEPGetSignal( MAINSW ) == MAINOFF then print("Main switch is off") end
+    if EEPGetSignal( MAINSW ) == MAINOFF then print("Main switch of blockControl is off") end
   end
 
   showSignalStatus()                    -- Show current signal status of all block signals
@@ -365,9 +366,6 @@ local function run ()
 
       train[trainId].block = 0                                       -- Set train to be located outside of any block
 
-      EEPSaveData( b, 0 )                                            -- Save the state in file for when EEP closes
-      if twowayblk[b] > 0 then EEPSaveData( twowayblk[b], 0 ) end    -- Also save the two-way twin block state, to get loaded in next cycle
-
       blockReserved[b] = 0                                           -- Set block to 'free'
       blockReserved[twowayblk[b]] = 0                                -- Also the two way twin block is now 'free'
 
@@ -384,13 +382,6 @@ local function run ()
 
         print("Train ",t," '",train[t].name,"' arrived in block ",b," and stays at least for ",allowed[t][b]," sec")
         train[t].block = b                                           -- Remember the location of the train...
-
-        if twowayblk[b] > 0 then
-          EEPSaveData( twowayblk[b], dummyTrain )                    -- ... and save a dummy train in the corresponding two way twin block, to get loaded in next cycle
-          print("Save dummy train in twin block ",twowayblk[b])
-        end
-
-        EEPSaveData( b, t )                                          -- Save the train number in this block, to get loaded in next cycle
 
         request[b]   = t                                             -- Flag is raised that train t in block b requests a new route
 
