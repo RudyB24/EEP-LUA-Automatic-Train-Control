@@ -5,10 +5,14 @@ Frank Buchholz added several enhancements to the code, like:
  - Automatic detection of placed trains
  - Split the code into a user configuration file and a separate control file that doesn't require editing
  - Option to add 'destination blocks'via which Lua looks more than one block ahead to prevent possible opposing trains deadlock
-I decided to keep the code over here in its original, minimalist, state.
 
-To download Frank's enhancements please visit his Github page over here:
+**NEWS March 2022**
+
+In the mean time mpre and more new functionality keeps getting added. Please visiy Frank's Github page to download the latest version:
+
 https://github.com/FrankBuchholz/EEP-LUA-Automatic-Train-Control
+
+The original code is kept here just for historical reference.
 
 November 2021 I moved to a new house. Besides the many pluses the new home offers there’s one little issue: there’s no room for my model railway anymore. EEP came to the rescue … I can still design and ‘build’ model railways and on my 4k screen they are fun to tinker with.
 
