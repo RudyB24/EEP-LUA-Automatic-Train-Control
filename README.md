@@ -6,6 +6,7 @@ Frank Buchholz added several enhancements to the code, like:
  - Split the code into a user configuration file and a separate control file that doesn't require editing
  - Option to add 'destination blocks'via which Lua looks more than one block ahead to prevent possible opposing trains deadlock
 I decided to keep the code over here in its original, minimalist, state.
+
 To download Frank's enhancements please visit his Github page over here: https://github.com/FrankBuchholz/EEP-LUA-Automatic-Train-Control
 
 
